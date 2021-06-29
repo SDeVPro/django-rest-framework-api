@@ -52,6 +52,61 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES':(
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+LOGGING = {
+    'version':1,
+    'disable_existing_loggers':True,
+    'filters':{
+        'require_debug_false':{
+            '()':'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true':{
+            '()':'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'formatters':{
+        'simple':{
+            'format':'[%(asctime)s] %(levelname)s: %(message)s',
+            'datefmt':'%Y.%m.%d %H:%M:%S',
+        }
+    },
+    'handlers':{
+        'console_dev':{
+            'class':'logging.StreamHandler',
+            'formatter':'simple',
+            'filters':['require_debug_true'],
+        },
+        'console_prod':{
+            'class':'logging.StreamHandler',
+            'formatter':'simple',
+            'level':'ERROR',
+            'filters':['require_debug_false'],
+        },
+        'file':{
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename':'d:/django-site.log',
+            'maxBytes':1048576,
+            'backupCount':10,
+            'formatter':'simple',
+        },
+
+    },
+    'loggers':{
+        'django':{
+            'handlers':['console_dev','console_prod'],
+        },
+        'django.server':{
+            'handlers':['file'],
+            'level':'INFO',
+            'propagate':True,
+        },
+    }
+}
 CORS_ORIGIN_WHITELIST = [
     'http://127.0.0.1',
 ]

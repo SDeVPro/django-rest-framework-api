@@ -1,15 +1,20 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from django.http import JsonResponse
 from .models import Rubric
 from .serializers import RubricSerializer
-from rest_framework import status
+from rest_framework import serializers, status
+from rest_framework.views import APIView
+from rest_framework import generics
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 
 
 @api_view(['GET','POST'])
+@permission_classes((IsAuthenticated,))
 def api_rubrics(request):
     if request.method == 'GET':
         rubrics = Rubric.objects.all()
@@ -37,6 +42,36 @@ def api_rubric_detail(request,pk):
         rubric.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class APIRubrics(APIView):
+    def get(self,request):
+        rubrics = Rubric.objects.all()
+        serializer = RubricSerializer(rubrics,many=True)
+        return Response(serializer.data)
+    def post(self,request):
+        serializer = RubricSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+class APIRubric(generics.ListCreateAPIView):
+    queryset = Rubric.objects.all()
+    serializer_class = RubricSerializer
+class APIRubricDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Rubric.objects.all()
+    serializer_class = RubricSerializer
+
+
+class APIRubricViewSet(ModelViewSet):
+    queryset = Rubric.objects.all()
+    serializer_class = RubricSerializer
+    permission_classes = (IsAuthenticated,)
+
+class APIRubricViewSetRO(ReadOnlyModelViewSet):
+    queryset = Rubric.objects.all()
+    serializer_class = RubricSerializer
 
 # @api_view(['GET'])
 # def api_rubrics(request):
